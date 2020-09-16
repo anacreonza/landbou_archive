@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('search');
 });
+Route::get('/search', 'SearchController@search')->name('search');
+Route::get('/results', function(){
+    return view('results');
+});
 
 Auth::routes();
 

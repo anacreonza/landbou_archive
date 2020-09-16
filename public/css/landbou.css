@@ -1,17 +1,18 @@
+:root {
+    --highlight-colour: rgb(9, 110, 9);
+    --highlight-hover: rgb(0, 100, 0);
+}
+
 body {
     height: 100vh;
 }
 img {
     max-width: 100%;
 }
-input[type=text] {
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    box-sizing: border-box;
-}
 .big-search-input {
-    padding: 20rem;
+    padding: 12px 20px;
+    width: 100%;
+    margin: 8px 0;
 }
 .search-background {
     height: 100%;
@@ -20,7 +21,6 @@ input[type=text] {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* background-image: url("../img/Plaas_1_0_210767006.jpg"); */
     background-size: cover;
 }
 .searchbox {
@@ -31,7 +31,7 @@ input[type=text] {
     border-radius: 12pt;
     padding: 3rem;
     margin-bottom: 1rem;
-    height: 20rem;
+    height: 18rem;
     width: 55rem;
     background: rgba(175, 175, 175, 0.6);
 }
@@ -59,12 +59,66 @@ input[type=text] {
     border-radius: 0.5rem;
     color: black;
 }
+.button:hover {
+    background-color: lightgray;
+}
 .search-button {
-    background-color: rgb(9, 110, 9);
+    background-color: var(--highlight-colour);
     color: white;
+}
+.search-button:hover {
+    background-color: var(--highlight-hover);
 }
 .searchform {
     display: flex;
     flex-direction: column;
     width: 100%
+}
+.searchbar {
+    display: flex;
+    justify-content: space-around;
+    background-color: var(--highlight-colour);
+    padding: 0.6rem;
+    color: white;
+}
+
+.toolbar-searchform {
+    vertical-align: middle;
+}
+.toolbar-search-input {
+    width: 25rem;
+    height: 2.2rem;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+    border: none;
+    vertical-align: middle;
+    padding: 6pt;
+}
+.mini-search-button {
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    height: 2.2rem;
+    width: 2.5rem;
+    border: none;
+    vertical-align: middle;
+    position: relative;
+    left: -3px;
+
+}
+.title-link {
+    color: white;
+    font-size: 18pt;
+}
+.title-link:link {
+    color: white;
+}
+.title-link:visited {
+    color: white;
+}
+.title-link:hover {
+    color: white;
+    text-decoration: none;
+}
+.container {
+    margin-top: 2rem;
 }

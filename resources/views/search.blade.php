@@ -14,13 +14,13 @@
     ?>
     <div class="search-background" style="background-image: url({{$random_image}})">
         <div class="searchbox">
-            <form action="" class="searchform">
+        <form action="/search" class="searchform" method="GET">
                 <div class="logobox">
                     <div class="logo">
                         <img src="logos/landboulogo.png" alt="logo">
                     </div>
                 </div>
-                <input type="text" class="form-control big-search-input">
+                <input type="text" class="form-control big-search-input" id="searchstring" name="searchstring">
                 <div class="button-group">
                     <div class="buttons">
                         <button type="submit" class="button search-button">Search</button>
