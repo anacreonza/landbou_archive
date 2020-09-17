@@ -122,3 +122,28 @@ img {
 .container {
     margin-top: 2rem;
 }
+.pagination-block {
+    margin-bottom: 1rem;
+}
+.article-preview {
+    margin-bottom: 1rem;
+}
+.preview-headline {
+    font-size: 14pt;
+    font-weight: bold;
+}
+.preview-metaitem {
+    font-size: 9pt;
+    color: white;
+    display: inline;
+    background-color: #999999;
+    padding: 6pt;
+    border-radius: 10px;
+    margin: 5pt 5pt 5pt 0pt;
+}
+.preview-highlightbox {
+    margin-bottom: 1rem;
+}
+.highlighted-text {
+    background-color: yellow;
+}

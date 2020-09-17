@@ -22,6 +22,33 @@ class SearchController extends Controller
         $this->elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
     }
     function search(){
-        $query = [];
+        $searchstring = $_GET['searchstring'];
+        $index = Config::get('elastic.index');
+        $params = [
+            'index' => $index,
+            'body' => [
+                'query' => [
+                    'match' => [
+                        'content' => $searchstring
+                    ]
+                ],
+                'highlight' => [
+                    'pre_tags' => "<span class='highlighted-text'>",
+                    'post_tags'=> "</span>",
+                    'fields' => [
+                        'content' => new \stdClass()
+                    ],
+                    'fragment_size' => 100
+                ],
+                'sort' => [
+                    'date.date.keyword' => [
+                        'order' => 'desc'
+                    ]
+                ],
+                'size' => '50'
+            ]
+        ];
+        $results = $this->elasticsearch->search($params);
+        return view('results')->with('results', $results);
     }
 }

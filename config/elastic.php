@@ -8,8 +8,6 @@ return [
         'ip' => 'localhost',
         'port' => '5601'
     ],
-    'indices' => [
-        'archive',
-    ]
-];
+    'index' => 'archive'
+    ];
 ?>

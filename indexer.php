@@ -105,6 +105,7 @@ function get_date($file){
     $year = prev($path_elements);
     $datestring = intval($year) . "-" . intval($month) . "-" . intval($day);
     $date = new DateTime($datestring);
+    $date = $date->format('Y-m-d');
     return $date;
 }
 function get_path($file){

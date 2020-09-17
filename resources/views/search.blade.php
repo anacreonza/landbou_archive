@@ -24,7 +24,7 @@
                 <div class="button-group">
                     <div class="buttons">
                         <button type="submit" class="button search-button">Search</button>
-                        <button type="submit" class="button options-button">More Options</button>
+                        <button class="button options-button">More Options</button>
                     </div>
                 </div>
             </form>
