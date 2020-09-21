@@ -1,4 +1,4 @@
-<?php $searchstring = $_GET['searchstring'];?>
+<?php $searchstring = Session::get('searchstring');?>
 <div class="searchbar">
     <a href="/" class="title-link">Landbou Text Archive</a>
     <form action="" class="toolbar-searchform">

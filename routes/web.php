@@ -17,9 +17,17 @@ Route::get('/', function () {
     return view('search');
 });
 Route::get('/search', 'SearchController@search')->name('search');
+Route::get('/search_options', function(){
+    return view('search_options');
+});
 Route::get('/results', function(){
     return view('results');
 });
+Route::get('/admin', function(){
+    return view('admin');
+});
+Route::get('/admin/delete_index', 'IndexController@delete');
+Route::get('/view_article', 'SearchController@search_id')->name('search_id');
 
 Auth::routes();
 

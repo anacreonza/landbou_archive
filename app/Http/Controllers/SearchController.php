@@ -21,14 +21,22 @@ class SearchController extends Controller
         ];
         $this->elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
     }
-    function search(){
+    public function search(){
         $searchstring = $_GET['searchstring'];
+        Session::put('searchstring', $searchstring);
         $index = Config::get('elastic.index');
+        if (Session::get('itemsperpage')){
+            $size = Session::get('itemsperpage');
+        } else {
+            Session::put('itemsperpage', "25");
+            $size = "25";
+        }
+        $from = "0";
         $params = [
             'index' => $index,
             'body' => [
                 'query' => [
-                    'match' => [
+                    'match_phrase' => [
                         'content' => $searchstring
                     ]
                 ],
@@ -41,14 +49,32 @@ class SearchController extends Controller
                     'fragment_size' => 100
                 ],
                 'sort' => [
-                    'date.date.keyword' => [
+                    'date' => [
                         'order' => 'desc'
                     ]
                 ],
-                'size' => '50'
+                'size' => $size,
+                'from' => $from
             ]
         ];
         $results = $this->elasticsearch->search($params);
+        Session::put('totalhits', $results['hits']['total']['value']);
         return view('results')->with('results', $results);
+    }
+    public function search_id(){
+        $id = $_GET['id'];
+        $index = Config::get('elastic.index');
+        $params = [
+            'index' => $index,
+            'body' => [
+                'query' => [
+                    'match' => [
+                        '_id' => $id
+                    ]
+                ]
+            ]
+        ];
+        $result = $this->elasticsearch->search($params);
+        return view('article_viewer')->with('result', $result);
     }
 }

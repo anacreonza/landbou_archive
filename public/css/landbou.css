@@ -31,7 +31,7 @@ img {
     border-radius: 12pt;
     padding: 3rem;
     margin-bottom: 1rem;
-    height: 18rem;
+    /* height: 18rem; */
     width: 55rem;
     background: rgba(175, 175, 175, 0.6);
 }

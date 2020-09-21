@@ -14,18 +14,27 @@
     ?>
     <div class="search-background" style="background-image: url({{$random_image}})">
         <div class="searchbox">
-        <form action="/search" class="searchform" method="GET">
+            <form action="/search" class="searchform" method="GET">
                 <div class="logobox">
                     <div class="logo">
-                        <img src="logos/landboulogo.png" alt="logo">
+                        <img src="logos/landboulogo.png" alt="logo" height="60px">
                     </div>
                 </div>
                 <input type="text" class="form-control big-search-input" id="searchstring" name="searchstring" value="{{Session::get('searchstring')}}">
+                <label for="order">Order:</label>
+                <select name="order" id="" class="form-control">
+                    <option value="">Show newest result first</option>
+                    <option value="">Show oldest result first</option>
+                    <option value="">Show most relevant first</option>
+                </select>
+                <label for="startdate">From:</label>
+                <input type="date" name="startdate" id="startdate" class="form-control">
+                <label for="enddate">To:</label>
+                <input type="date" name="enddate" id="enddate" class="form-control">
                 <div class="button-group">
                     <div class="buttons">
                         <button type="submit" class="button search-button">Search</button>
                     </div>
-                    <a href="/search_options">More search options</a>
                 </div>
             </form>
         </div>

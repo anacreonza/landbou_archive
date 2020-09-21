@@ -14,11 +14,8 @@ $hosts = [$host];
 $client = ClientBuilder::create()->setHosts($hosts)->build();
 
 // Read in the html file and extract the different metadata keys from the html.
-if (!isset($argv[1])){
-    die("\nPlease specify an input path!\n\n");
-}
 
-$input_path = $argv[1];
+$input_path = 'public/archives/';
 
 if (!is_dir($input_path)){
     die("Invalid input path!");
@@ -59,7 +56,7 @@ function get_categories($html_object){
     $body = $html_object->getElementsByTagName('body')->item(0);
     $lines = explode("\n", $body->nodeValue);
     foreach ($lines as $line){
-        if (strpos($line, "ategorie")){
+        if (strpos($line, "ategorie:")){
             $line = str_replace("Kategorie: ", '', $line);
             $line = str_replace("&nbsp;", '', $line);
             $line = str_replace("\r", '', $line);
@@ -112,6 +109,12 @@ function get_path($file){
     $path = $file;
     return $path;
 }
+function get_publication($file){
+    $dirname = dirname($file);
+    $path_elements = explode("/", $dirname);
+    $publication = $path_elements[2];
+    return $publication;
+}
 function get_metas($file){
     $metas = [];
     $html_object = get_html($file);
@@ -121,6 +124,7 @@ function get_metas($file){
     $metas['content'] = get_articlehtml($html_object);
     $metas['pagenos'] = get_pagenumbers($html_object);
     $metas['date'] = get_date($file);
+    $metas['publication'] = get_publication($file);
     $metas['path'] = get_path($file);
     return $metas;
 }

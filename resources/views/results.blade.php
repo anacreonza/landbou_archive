@@ -20,17 +20,23 @@ function remove_tags_from_highlight($highlight){
 @section('content')
     <x-searchbar/>
     <div class="container">
-        <p>Showing results for "{{$searchstring}}". {{$results['hits']['total']['value']}} items found</p>
+        <x-resultdetails/>
         <x-pagination/>
         @foreach ($results['hits']['hits'] as $hit)
             <div class="articlepreview">
-                <div class="preview-headline"><a href="/view_article?id={{$hit['_id']}}">{!!$hit['_source']['headlines'][0]!!}</a></div>
+                <div class="preview-headline">
+                @if (isset($hit['_source']['headlines'][0]))
+                    <a href="/view_article?id={{$hit['_id']}}">{!!$hit['_source']['headlines'][0]!!}"</a>
+                @else
+                    <a href="/view_article?id={{$hit['_id']}}">No headline detected in story</a>
+                @endif
+                </div>
                 <div class="preview-highlightbox"><em>Highlights:</em> 
                     @foreach ($hit['highlight']['content'] as $highlight)
                         {!!remove_tags_from_highlight($highlight)!!}
                     @endforeach
                 </div>
-                <div class="preview-metaitem">{{$hit['_source']['date']['date']}}</div>
+                <div class="preview-metaitem">{{$hit['_source']['date']}}</div>
                 @if (isset($hit['_source']['categories']))
                     @foreach ($hit['_source']['categories'] as $category)
                         <div class="preview-metaitem">{{$category}}</div>
@@ -45,6 +51,7 @@ function remove_tags_from_highlight($highlight){
             <hr>
         @endforeach
         {{-- {!!$results['hits']['hits'][2]['_source']['content']!!} --}}
+        <x-pagination/>
     </div>
       
 @endsection
