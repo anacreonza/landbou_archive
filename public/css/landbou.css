@@ -33,7 +33,7 @@ img {
     margin-bottom: 1rem;
     /* height: 18rem; */
     width: 55rem;
-    background: rgba(175, 175, 175, 0.6);
+    background: rgba(175, 175, 175, 0.7);
 }
 .logobox {
     display: flex;
@@ -43,7 +43,13 @@ img {
     z-index: 1;
 }
 .logo {
-    width: 25rem;
+    margin-bottom: 1rem;
+}
+.logo img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
 }
 .button-group {
     display: flex;
@@ -76,10 +82,12 @@ img {
 }
 .searchbar {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     background-color: var(--highlight-colour);
     padding: 0.6rem;
     color: white;
+    padding-left: 5rem;
+    padding-right: 5rem;
 }
 
 .toolbar-searchform {
@@ -146,4 +154,13 @@ img {
 }
 .highlighted-text {
     background-color: yellow;
+}
+.daterange-block {
+    display: flex;
+    margin-top: 15pt;
+    margin-bottom: 15pt;
+    justify-content: space-between;
+}
+.date-item {
+    width: 48%;
 }

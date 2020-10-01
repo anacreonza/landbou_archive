@@ -22,7 +22,7 @@ class SearchController extends Controller
         $this->elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
     }
     public function search(){
-        $searchstring = $_GET['searchstring'];
+        $searchstring = $_GET['searchstring'];        
         Session::put('searchstring', $searchstring);
         $index = Config::get('elastic.index');
         if (Session::get('itemsperpage')){
@@ -31,7 +31,16 @@ class SearchController extends Controller
             Session::put('itemsperpage', "25");
             $size = "25";
         }
-        $from = "0";
+        if (isset($_GET['page'])){
+            $page = $_GET['page'];
+        } else {
+            $page = 1;
+        }
+        if ($page == 1){
+            $from = "0";
+        } else {
+            $from = ($size * $page) - $size;
+        }
         $params = [
             'index' => $index,
             'body' => [
@@ -57,6 +66,7 @@ class SearchController extends Controller
                 'from' => $from
             ]
         ];
+        Session::put('query', $params);
         $results = $this->elasticsearch->search($params);
         Session::put('totalhits', $results['hits']['total']['value']);
         return view('results')->with('results', $results);

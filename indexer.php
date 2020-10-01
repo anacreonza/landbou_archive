@@ -15,9 +15,9 @@ $client = ClientBuilder::create()->setHosts($hosts)->build();
 
 // Read in the html file and extract the different metadata keys from the html.
 
-$input_path = 'public/archives/';
+$input_dir = 'public/archives/';
 
-if (!is_dir($input_path)){
+if (!is_dir($input_dir)){
     die("Invalid input path!");
 }
 
@@ -38,6 +38,13 @@ function get_headlines($html_object){
         $head = str_replace("\r", '', $head);
         array_push($headlines, $head);
     }
+    // $p1s = $html_object->getElementsByClassName('p1');
+    // for ($i=0; $i < $p1s->length; $i++) { 
+    //     $head = $p1s->item($i)->nodeValue;
+    //     $head = mb_convert_encoding($head, 'HTML-ENTITIES', 'UTF-8');
+    //     $head = str_replace("\r", '', $head);
+    //     array_push($headlines, $head);        
+    // }
     return $headlines;
 }
 function get_credits($html_object){
@@ -140,22 +147,27 @@ function post_entry($entry, $client){
 }
 // $json_file = fopen("index.json", "w") or die("Unable to create json file!");
 
-$dir = new RecursiveDirectoryIterator($input_path);
-$Iterator = new RecursiveIteratorIterator($dir);
-$Regex = new RegexIterator($Iterator, '/^.+\.html$/i', RecursiveRegexIterator::GET_MATCH);
-$files = [];
-foreach ($Regex as $filepath){
-    $files[] = $filepath[0];
+function get_files($input_dir){
+	$file_extension = '/^.+\.' . "html" . '$/i';
+    $Directory = new RecursiveDirectoryIterator($input_dir);
+	$Iterator = new RecursiveIteratorIterator($Directory);
+	$Regex = new RegexIterator($Iterator, $file_extension, RecursiveRegexIterator::GET_MATCH);
+	$files = array();
+	foreach($Regex as $filepath){
+		array_push($files, $filepath[0]);
+    }
+    return $files;
 }
-$idno = 1;
-foreach ($files as $file) {
-    echo "\nIndexing " . $file . "\n";
+
+$files = get_files($input_dir);
+for ($i=1; $i > $files->length; $i++) { 
+    $file = $files[$i];
+    echo "\nIndexing file no. " . $i . " of " . $files->length . ": " . $file . "\n";
     $item = get_metas($file);
     $result = post_entry($item, $client);
     print_r($result);
-    $idno++;
 }
-// fclose($json_file);
+
 
 $end_time = microtime(true);
 $execution_time = ($end_time - $start_time)/60;
