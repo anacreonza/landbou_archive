@@ -24,6 +24,37 @@ class SearchController extends Controller
     public function search(){
         $searchstring = $_GET['searchstring'];        
         Session::put('searchstring', $searchstring);
+        $sort_order = $_GET['sort_order'];
+        switch ($sort_order) {
+
+            case 'oldest':
+                $sort_options = [
+                    'date' => [
+                        'order' => 'asc'
+                    ]
+                ];
+                break;
+
+            case 'relevant':
+                $sort_options = [
+                    '_score' => [
+                        'order' => 'asc'
+                    ]
+                ];
+                break;
+            
+            default:
+                $sort_options = [
+                    'date' => [
+                        'order' => 'desc'
+                    ]
+                ];
+                break;
+        }
+        $search_options = array();
+        $search_options['sort_order'] = $sort_order;
+        Session::put('search_options', $search_options);
+        
         $index = Config::get('elastic.index');
         if (Session::get('itemsperpage')){
             $size = Session::get('itemsperpage');
@@ -57,11 +88,7 @@ class SearchController extends Controller
                     ],
                     'fragment_size' => 100
                 ],
-                'sort' => [
-                    'date' => [
-                        'order' => 'desc'
-                    ]
-                ],
+                'sort' => $sort_options,
                 'size' => $size,
                 'from' => $from
             ]
@@ -69,7 +96,7 @@ class SearchController extends Controller
         Session::put('query', $params);
         $results = $this->elasticsearch->search($params);
         Session::put('totalhits', $results['hits']['total']['value']);
-        return view('results')->with('results', $results);
+        return view('results')->with('results', $results)->with('params', $params);
     }
     public function search_id(){
         $id = $_GET['id'];

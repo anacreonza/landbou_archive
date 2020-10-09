@@ -18,7 +18,7 @@ $client = ClientBuilder::create()->setHosts($hosts)->build();
 $input_dir = 'public/archives/';
 
 if (!is_dir($input_dir)){
-    die("Invalid input path!");
+    die("Invalid input path: " . $input_dir);
 }
 
 function get_html($file){
@@ -38,13 +38,6 @@ function get_headlines($html_object){
         $head = str_replace("\r", '', $head);
         array_push($headlines, $head);
     }
-    // $p1s = $html_object->getElementsByClassName('p1');
-    // for ($i=0; $i < $p1s->length; $i++) { 
-    //     $head = $p1s->item($i)->nodeValue;
-    //     $head = mb_convert_encoding($head, 'HTML-ENTITIES', 'UTF-8');
-    //     $head = str_replace("\r", '', $head);
-    //     array_push($headlines, $head);        
-    // }
     return $headlines;
 }
 function get_credits($html_object){

@@ -18,7 +18,8 @@ Route::get('/', function () {
 });
 Route::get('/search', 'SearchController@search')->name('search');
 Route::get('/search_options', function(){
-    return view('search_options');
+    $search_options = Session::get('search_options');
+    return view('search_options')->with('search_options', $search_options);
 });
 Route::get('/results', function(){
     return view('results');
@@ -27,6 +28,7 @@ Route::get('/admin', function(){
     return view('admin');
 });
 Route::get('/admin/delete_index', 'IndexController@delete');
+Route::get('/admin/rebuild_index', 'IndexController@rebuild_index');
 Route::get('/view_article', 'SearchController@search_id')->name('search_id');
 
 Auth::routes();

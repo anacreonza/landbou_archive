@@ -21,6 +21,7 @@
                     </div>
                 </div>
                 <input type="text" class="form-control big-search-input" id="searchstring" name="searchstring" value="{{Session::get('searchstring')}}">
+                <input type="hidden" name="sort_order" value="newest">
                 <div class="button-group">
                     <div class="buttons">
                         <button type="submit" class="button search-button">Search</button>

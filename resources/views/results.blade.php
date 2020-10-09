@@ -1,6 +1,5 @@
 <?php
 $searchstring = $_GET['searchstring'];
-
 function remove_tags_from_highlight($highlight){
         $highlight = str_replace('<h1>', '', $highlight);
         $highlight = str_replace('</h1>', '', $highlight);

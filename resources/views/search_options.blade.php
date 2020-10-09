@@ -9,6 +9,9 @@ foreach ($background_images as $image) {
 }
 $i = rand(0, count($safe_bg_images)-1);
 $random_image = "img/" . $safe_bg_images[$i];
+if (!isset($search_options)){
+    $search_options['sort_order'] = "newest";
+}
 @endphp
 @section('content')
     <div class="search-background" style="background-image: url({{$random_image}})">
@@ -22,10 +25,19 @@ $random_image = "img/" . $safe_bg_images[$i];
                 <label for="searchstring">Text to search for:</label>
                 <input type="text" class="form-control big-search-input" id="searchstring" name="searchstring" value="{{Session::get('searchstring')}}">
                 <label for="order">Order:</label>
-                <select name="order" id="" class="form-control">
-                    <option value="">Show newest result first</option>
-                    <option value="">Show oldest result first</option>
-                    <option value="">Show most relevant first</option>
+                <select name="sort_order" id="sort_order" class="form-control">
+                    <option value="newest"
+                    @if ($search_options['sort_order'] == "newest")
+                        selected
+                    @endif>Show newest result first</option>
+                    <option value="oldest"
+                    @if ($search_options['sort_order'] == "oldest")
+                    selected
+                    @endif>Show oldest result first</option>
+                    <option value="relevant" 
+                    @if ($search_options['sort_order'] == "relevant")
+                    selected
+                    @endif>Show most relevant first</option>
                 </select>
                 <div class="daterange-block">
                     <div class="date-item">
