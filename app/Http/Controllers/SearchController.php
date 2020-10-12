@@ -22,9 +22,15 @@ class SearchController extends Controller
         $this->elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
     }
     public function search(){
-        $searchstring = $_GET['searchstring'];        
+        
+        $searchstring = $_GET['searchstring'];
         Session::put('searchstring', $searchstring);
-        $sort_order = $_GET['sort_order'];
+
+        if (isset($_GET['sort_order'])){
+            $sort_order = $_GET['sort_order'];
+        } else {
+            $sort_order = Session::get('sort_order');
+        }
         switch ($sort_order) {
 
             case 'oldest':
@@ -51,9 +57,21 @@ class SearchController extends Controller
                 ];
                 break;
         }
-        $search_options = array();
-        $search_options['sort_order'] = $sort_order;
-        Session::put('search_options', $search_options);
+        Session::put('sort_order', $sort_order);
+
+        // If a date range is specified
+        if (isset($_GET['startdate']) && $_GET['startdate'] != ''){
+            $startdate = $_GET['startdate'];
+            $filter = [];
+            $filter['range']['date']['gte'] = $startdate;
+        }
+        if (isset($_GET['enddate']) && $_GET['enddate'] != ''){
+            $enddate = $_GET['enddate'];
+            if (!isset($filter)){
+                $filter = [];
+            }
+            $filter['range']['date']["lte"] = $enddate;
+        }
         
         $index = Config::get('elastic.index');
         if (Session::get('itemsperpage')){
@@ -72,14 +90,18 @@ class SearchController extends Controller
         } else {
             $from = ($size * $page) - $size;
         }
+
         $params = [
             'index' => $index,
             'body' => [
                 'query' => [
-                    'match_phrase' => [
-                        'content' => $searchstring
-                    ]
-                ],
+                    'bool' => [
+                        'must' => [
+                            'match_phrase' => [
+                                'content' => $searchstring
+                            ]
+                        ]
+                    ]],
                 'highlight' => [
                     'pre_tags' => "<span class='highlighted-text'>",
                     'post_tags'=> "</span>",
@@ -93,6 +115,12 @@ class SearchController extends Controller
                 'from' => $from
             ]
         ];
+        // Add date filter if necessary
+        if (isset($filter)){
+            $params['body']['query']['bool']['filter'] = $filter; 
+        }
+        $params_json = \json_encode($params['body'], JSON_PRETTY_PRINT);
+        // die(print_r($params_json));
         Session::put('query', $params);
         $results = $this->elasticsearch->search($params);
         Session::put('totalhits', $results['hits']['total']['value']);

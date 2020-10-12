@@ -12,6 +12,7 @@ $random_image = "img/" . $safe_bg_images[$i];
 if (!isset($search_options)){
     $search_options['sort_order'] = "newest";
 }
+$start_date = Session::get('startdate');
 @endphp
 @section('content')
     <div class="search-background" style="background-image: url({{$random_image}})">

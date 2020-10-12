@@ -21,6 +21,7 @@ function remove_tags_from_highlight($highlight){
     <div class="container">
         <x-resultdetails/>
         <x-pagination/>
+        {{-- <x-debugbar/> --}}
         @foreach ($results['hits']['hits'] as $hit)
             <div class="articlepreview">
                 <div class="preview-headline">
