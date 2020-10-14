@@ -2,6 +2,8 @@
 $start_time = microtime(true);
 define("ELASTICSEARCH_SERVER_URL", "http://localhost");
 define("ELASTICSEARCH_SERVER_PORT", "9200");
+define("INPUT_DIR", 'public/archives/');
+define("INDEX", "archive");
 
 require 'vendor/autoload.php';
 
@@ -15,10 +17,8 @@ $client = ClientBuilder::create()->setHosts($hosts)->build();
 
 // Read in the html file and extract the different metadata keys from the html.
 
-$input_dir = 'public/archives/';
-
-if (!is_dir($input_dir)){
-    die("Invalid input path: " . $input_dir);
+if (!is_dir(INPUT_DIR)){
+    die("Invalid input path: " . INPUT_DIR);
 }
 
 function get_html($file){
@@ -28,7 +28,21 @@ function get_html($file){
     $domdoc->loadHTML($encoded_html);
     return $domdoc;
 }
-
+function check_if_indexed($file_path, $client){
+    $params = [
+        'index' => 'archive',
+        'body' => [
+            'query' => [
+                "match_phrase" => [
+                    "path" => $file_path
+                ]
+            ]
+        ]
+    ];
+    $response = $client->search($params);
+    $found = $response['hits']['total']['value'];
+    return $found;
+}
 function get_headlines($html_object){
     $headlines = [];
     $h1s = $html_object->getElementsByTagName('h1');
@@ -151,19 +165,48 @@ function get_files($input_dir){
     }
     return $files;
 }
-
-$files = get_files($input_dir);
-for ($i=1; $i > $files->length; $i++) { 
-    $file = $files[$i];
-    echo "\nIndexing file no. " . $i . " of " . $files->length . ": " . $file . "\n";
-    $item = get_metas($file);
-    $result = post_entry($item, $client);
-    print_r($result);
+function index_check($client){
+    $params['index'] = INDEX;
+    return $client->indices()->exists($params);
 }
-
+$index_exists = index_check($client);
+if (!$index_exists){
+    $params = [
+        'index' => INDEX,
+        'body' => [
+            'settings' => [
+                'number_of_shards' => 2,
+                'number_of_replicas' => 0
+            ]
+        ]
+    ];
+    $response = $client->indices()->create($params);
+    if ($response['acknowledged'] == 1){
+        print_r("New index created.");
+    }
+}
+$files = get_files(INPUT_DIR);
+$files_total = count($files);
+$files_counter = 0;
+$files_indexed_count = 0;
+foreach($files as $file){
+    $files_counter++;
+    print_r("Processing file " . $files_counter . " of " . $files_total . ": " . $file . " ");
+    $found = check_if_indexed($file, $client);
+    if ($found){
+        print_r("[ ALREADY INDEXED ]\n");
+        continue;
+    } else {
+        print_r("[ NEW FILE! ]\n");
+        $files_indexed_count++;
+        $item = get_metas($file);
+        $result = post_entry($item, $client);
+        print_r($result['result'] . " new item. ID: " . $result["_id"] . "\n");
+    }
+}
 
 $end_time = microtime(true);
 $execution_time = ($end_time - $start_time)/60;
 $execution_time = round($execution_time, 2);
-echo("\nIndexing complete. $idno items indexed. Script took $execution_time minutes to complete.\n");
+echo("\nIndexing complete. " . $files_indexed_count . " new items indexed. Script took $execution_time minutes to complete.\n");
 ?>
