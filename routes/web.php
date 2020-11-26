@@ -27,6 +27,9 @@ Route::get('/results', function(){
 Route::get('/admin', function(){
     return view('admin');
 });
+Route::get('/phpadmin', function(){
+    return view('phpinfo');
+});
 Route::get('/admin/delete_index', 'IndexController@delete');
 Route::get('/admin/rebuild_index', 'IndexController@rebuild_index');
 Route::get('/view_article', 'SearchController@search_id')->name('search_id');

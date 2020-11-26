@@ -1,6 +1,9 @@
 /node_modules
-/public/hot
+/public/hotfolder
 /public/storage
+/public/archives
+/public/temp
+/public/oldsite.zip
 /storage/*.key
 /vendor
 /public/archives

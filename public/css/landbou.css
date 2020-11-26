@@ -136,6 +136,10 @@ img {
 .article-preview {
     margin-bottom: 1rem;
 }
+.article {
+    margin-top: 2rem;
+    margin-bottom: 4rem;
+}
 .preview-headline {
     font-size: 14pt;
     font-weight: bold;
@@ -163,4 +167,8 @@ img {
 }
 .date-item {
     width: 48%;
+}
+.backlink {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
 }

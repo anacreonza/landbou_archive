@@ -42,8 +42,8 @@ function remove_tags_from_highlight($highlight){
                         <div class="preview-metaitem">{{$category}}</div>
                     @endforeach
                 @endif
-                @if (isset($hit['_source']['credit']))
-                    @foreach ($hit['_source']['credit'] as $credit)
+                @if (isset($hit['_source']['credits']))
+                    @foreach ($hit['_source']['credits'] as $credit)
                         <div class="preview-metaitem">{{$credit}}</div>
                     @endforeach
                 @endif

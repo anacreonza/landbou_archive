@@ -25,8 +25,13 @@ class IndexController extends Controller
     }
     public function delete(){
         $params = ['index' => 'archive'];
-        $response = $this->elasticsearch->indices()->delete($params);
-        var_dump($response);
+        $index_exists = $this->elasticsearch->indices()->exists($params);
+        if ($index_exists){
+            $response = $this->elasticsearch->indices()->delete($params);
+            return redirect('/')->with('message', 'Index deleted!');
+        } else {
+            return redirect('/')->with('message', 'No index to delete!');
+        }
     }
     public function index_item($item){
 

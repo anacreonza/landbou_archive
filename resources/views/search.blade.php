@@ -12,6 +12,11 @@
     $i = rand(0, count($safe_bg_images)-1);
     $random_image = "img/" . $safe_bg_images[$i];
     ?>
+    @if (session('message'))
+    <div class="alert alert-warning">
+        {{ session('message') }}
+    </div>
+    @endif
     <div class="search-background" style="background-image: url({{$random_image}})">
         <div class="searchbox">
         <form action="/search" class="searchform" method="GET">
