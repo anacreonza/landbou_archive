@@ -97,10 +97,16 @@ function get_headlines($htmlfile){
     $html = file_get_contents($htmlfile);
     $domdoc = new DOMDocument;
     $domdoc->loadHTML($html);
-    $headings = $domdoc->getElementsByTagName('strong');
     $headlines = [];
+    $headings = $domdoc->getElementsByTagName('strong');
     for ($i=0; $i < $headings->length; $i++) { 
         $head = $headings->item($i)->nodeValue;
+        array_push($headlines, $head);
+    }
+    $h1s = $domdoc->getElementsByTagName('h1');
+    for ($i=0; $i < $h1s->length; $i++) { 
+        $head = $h1s->item($i)->nodeValue;
+        $head = str_replace("\r", '', $head);
         array_push($headlines, $head);
     }
     return $headlines;
@@ -216,6 +222,7 @@ $files_indexed_count = 0;
 
 foreach ($inputfiles as $filename) {
     if (preg_match('/^\./', $filename)){
+        $files_total--;
         continue;
     }
     $files_counter++;
@@ -225,7 +232,7 @@ foreach ($inputfiles as $filename) {
         print_r("    Converting file to HTML...\n");
         $htmlfile = convert_to_html($file);
     } elseif(strpos($filename, ".html")) {
-        $htmlfile = $filename;
+        $htmlfile = $file;
     }
     $found = check_if_indexed($filename, $client);
     if ($found){
@@ -241,7 +248,6 @@ foreach ($inputfiles as $filename) {
     $newdir = build_newdir($file);
     print_r("    Storing " . basename($htmlfile) . "\n");
     store_file($htmlfile, $newdir);
-    unlink($file);
 
 }
 $end_time = microtime(true);
