@@ -26,9 +26,9 @@ function remove_tags_from_highlight($highlight){
             <div class="articlepreview">
                 <div class="preview-headline">
                 @if (isset($hit['_source']['headlines'][0]))
-                    <a href="/view_article?id={{$hit['_id']}}">{!!$hit['_source']['headlines'][0]!!}"</a>
+                    <a href="/article/read/{{$hit['_id']}}">{!!$hit['_source']['headlines'][0]!!}</a>
                 @else
-                    <a href="/view_article?id={{$hit['_id']}}">No headline detected in story</a>
+                    <a href="/article/read/{{$hit['_id']}}">No headline detected in story</a>
                 @endif
                 </div>
                 <div class="preview-highlightbox"><em>Highlights:</em> 

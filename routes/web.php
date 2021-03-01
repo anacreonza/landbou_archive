@@ -32,8 +32,14 @@ Route::get('/phpadmin', function(){
 });
 Route::get('/admin/delete_index', 'IndexController@delete');
 Route::get('/admin/rebuild_index', 'IndexController@rebuild_index');
-Route::get('/view_article', 'SearchController@search_id')->name('search_id');
 
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index');
+
+Route::get('/article/download/{id}', 'ArticleController@download');
+Route::get('/article/create', 'ArticleController@create');
+Route::get('/article/read/{id}', 'SearchController@search_id')->name('search_id');
+Route::get('/article/update/{id}', 'ArticleController@update');
+Route::get('/article/delete/{id}', 'ArticleControler@delete');

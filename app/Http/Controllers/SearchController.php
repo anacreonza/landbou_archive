@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Elasticsearch\ClientBuilder;
+use Illuminate\Support\Facades\Log;
 use Config;
 use Session;
 use DOMDocument;
@@ -122,12 +123,16 @@ class SearchController extends Controller
         $params_json = \json_encode($params['body'], JSON_PRETTY_PRINT);
         // die(print_r($params_json));
         Session::put('query', $params);
+        Log::info($params_json);
         $results = $this->elasticsearch->search($params);
         Session::put('totalhits', $results['hits']['total']['value']);
         return view('results')->with('results', $results)->with('params', $params);
     }
-    public function search_id(){
-        $id = $_GET['id'];
+    public function search_id(Request $request, $id){
+        $meta = $this->retrieve_article_meta_by_id($id);
+        return view('article_viewer')->with('result', $meta);
+    }
+    public function retrieve_article_meta_by_id($id){
         $index = Config::get('elastic.index');
         $params = [
             'index' => $index,
@@ -140,6 +145,6 @@ class SearchController extends Controller
             ]
         ];
         $result = $this->elasticsearch->search($params);
-        return view('article_viewer')->with('result', $result);
+        return $result;
     }
 }

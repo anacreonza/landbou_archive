@@ -2,19 +2,19 @@
 
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     // Host OS is Windows
-    define('PANDOC', 'pandoc.exe');
+    define('PANDOC', 'c:\Program Files\Pandoc\pandoc.exe');
 } else {
     // Host OS is not Windows
     define('PANDOC', "/usr/local/bin/pandoc");
 }
 
-define('INPUTDIR', "public/hotfolder");
+define('INPUTDIR', "public" . DIRECTORY_SEPARATOR . "lbarchive_hotfolder");
 define("ELASTICSEARCH_SERVER_URL", "http://localhost");
 define("ELASTICSEARCH_SERVER_PORT", "9200");
 define("INDEX", "archive");
-define("ARCHIVEDIR", 'public/archives');
+define("ARCHIVEDIR", "public" . DIRECTORY_SEPARATOR . "archives");
 define("PUBLICATION", "LandbouWeekblad");
-define("TEMPDIR", "public/temp");
+define("TEMPDIR", "public" . DIRECTORY_SEPARATOR . "temp");
 
 require 'vendor/autoload.php';
 use Elasticsearch\ClientBuilder;
@@ -204,9 +204,13 @@ function store_file($file, $newdir){
             die('Failed to create folder');
         }
     }
-    copy($file, $newname);
-    if (file_exists($newname)){
-        unlink($file);
+    print_r("    Storing " . basename($file) . "\n");
+    rename($file, $newname);
+    // Clean up .docx files left behind
+    $originalfile = INPUTDIR . DIRECTORY_SEPARATOR . basename($file, ".html");
+    if (file_exists($originalfile)){
+        print_r("    Deleting original file $originalfile\n");
+        unlink($originalfile);
     }
 }
 function build_newdir($file){
@@ -246,7 +250,6 @@ foreach ($inputfiles as $filename) {
         print_r("    " . $result['result'] . " new item. ID: " . $result["_id"] . "\n");
     }
     $newdir = build_newdir($file);
-    print_r("    Storing " . basename($htmlfile) . "\n");
     store_file($htmlfile, $newdir);
 
 }

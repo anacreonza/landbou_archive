@@ -136,9 +136,28 @@ img {
 .article-preview {
     margin-bottom: 1rem;
 }
-.article {
-    margin-top: 2rem;
-    margin-bottom: 4rem;
+.article-container {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    grid-gap: 50px 50px;
+}
+.article-metabox-container {
+    display: grid;
+    border: 2pt solid gray;
+    padding: none;
+}
+.metabox-header {
+    padding: 4pt;
+    font-weight: bolder;
+    color: white;
+    background-color: gray;
+    border: 2pt solid gray;
+}
+.metabox-body {
+    padding: 4pt;
+}
+.info-item {
+    padding: 1pt;
 }
 .preview-headline {
     font-size: 14pt;
