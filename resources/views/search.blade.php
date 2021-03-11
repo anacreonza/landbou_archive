@@ -32,6 +32,7 @@
                         <button type="submit" class="button search-button">Search</button>
                     </div>
                     <a href="/search_options">More search options</a>
+                    <a href="/admin">Admin page</a>
                 </div>
             </form>
         </div>

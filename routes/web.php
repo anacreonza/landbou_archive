@@ -25,13 +25,15 @@ Route::get('/results', function(){
     return view('results');
 });
 Route::get('/admin', function(){
-    return view('admin');
+    $indexinfo = app('App\Http\Controllers\IndexController')->get_total_indexed_items();
+    return view('admin')->with('indexinfo', $indexinfo);
 });
 Route::get('/phpadmin', function(){
     return view('phpinfo');
 });
 Route::get('/admin/delete_index', 'IndexController@delete');
 Route::get('/admin/rebuild_index', 'IndexController@rebuild_index');
+Route::get('/admin/ingest_files', 'IndexController@ingest_files');
 
 Auth::routes();
 

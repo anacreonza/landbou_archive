@@ -1,28 +1,33 @@
 <?php
 
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Elasticsearch\ClientBuilder;
+use Carbon\Carbon;
+use Config;
+
 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
     // Host OS is Windows
-    define('PANDOC', 'c:\Program Files\Pandoc\pandoc.exe');
+    define('PANDOC', 'pandoc.exe');
 } else {
     // Host OS is not Windows
     define('PANDOC', "/usr/local/bin/pandoc");
 }
 
 define('INPUTDIR', "public" . DIRECTORY_SEPARATOR . "lbarchive_hotfolder");
-define("ELASTICSEARCH_SERVER_URL", "http://localhost");
-define("ELASTICSEARCH_SERVER_PORT", "9200");
 define("INDEX", "archive");
 define("ARCHIVEDIR", "public" . DIRECTORY_SEPARATOR . "archives");
 define("PUBLICATION", "LandbouWeekblad");
 define("TEMPDIR", "public" . DIRECTORY_SEPARATOR . "temp");
 
 require 'vendor/autoload.php';
-use Elasticsearch\ClientBuilder;
 
 $start_time = microtime(true);
 $inputfiles = scandir(INPUTDIR);
 
-$host = ELASTICSEARCH_SERVER_URL . ":" . ELASTICSEARCH_SERVER_PORT;
+$host = Config::get('elastic.server.ip') . ":" . Config::get('elastic.server.port');
 $hosts = [$host];
 $client = ClientBuilder::create()->setHosts($hosts)->build();
 
@@ -208,8 +213,9 @@ function store_file($file, $newdir){
     rename($file, $newname);
     // Clean up .docx files left behind
     $originalfile = INPUTDIR . DIRECTORY_SEPARATOR . basename($file, ".html");
-    if (file_exists($originalfile)){
-        print_r("    Deleting original file $originalfile\n");
+    // Check if new file stored in archive is present and not zero
+    if (filesize($newname)){
+        print_r("    Removing original file $originalfile\n");
         unlink($originalfile);
     }
 }

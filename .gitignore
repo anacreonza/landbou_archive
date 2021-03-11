@@ -7,6 +7,7 @@
 /storage/*.key
 /vendor
 /public/archives
+/index
 .DS_Store
 .env
 .env.backup
