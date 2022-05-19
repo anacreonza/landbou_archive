@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('search');
+    $index_info = app('App\Http\Controllers\SearchController')->get_index_info();
+    return view('search')->with('index_info', $index_info);
 });
 Route::get('/search', 'SearchController@search')->name('search');
 Route::get('/search_options', function(){
@@ -35,13 +36,13 @@ Route::get('/admin/delete_index', 'IndexController@delete');
 Route::get('/admin/rebuild_index', 'IndexController@rebuild_index');
 Route::get('/admin/ingest_files', 'IndexController@ingest_files');
 
-Auth::routes();
-
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index');
 
-Route::get('/article/download/{id}', 'ArticleController@download');
-Route::get('/article/create', 'ArticleController@create');
 Route::get('/article/read/{id}', 'SearchController@search_id')->name('search_id');
-Route::get('/article/update/{id}', 'ArticleController@update');
-Route::get('/article/delete/{id}', 'ArticleControler@delete');
+Route::get('/article/download/{id}', 'ArticleController@download');
+Route::post('/article/create', 'ArticleController@create');
+Route::get('/article/edit/{id}', 'ArticleController@edit');
+Route::post('/article/update/{id}', 'ArticleController@update');
+Route::delete('/article/delete/{id}', 'ArticleController@delete');
+Route::get('/article/compose/', 'ArticleController@compose');

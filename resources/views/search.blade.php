@@ -31,10 +31,22 @@
                     <div class="buttons">
                         <button type="submit" class="button search-button">Search</button>
                     </div>
-                    <a href="/search_options">More search options</a>
-                    <a href="/admin">Admin page</a>
+                    <div>
+                        <div>
+                            <a class="home-link" href="/search_options">More search options</a>
+                        </div>
+                        <div>
+                            <a class="home-link" href="/article/compose/">Compose new article</a>
+                        </div>
+                        <div>
+                            <a class="home-link" href="/admin">Admin page</a>
+                        </div>
+                    </div>
                 </div>
             </form>
+        </div>
+        <div class="index-info-block">
+            <p>{{$index_info['total']}} items indexed. Latest document: {{$index_info['newest_date']}}</p>
         </div>
     </div>
 @endsection

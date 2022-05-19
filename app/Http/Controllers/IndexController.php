@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Elasticsearch\ClientBuilder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Config;
 use DateTime;
 use DOMDocument;
@@ -32,6 +33,7 @@ class IndexController extends Controller
         $index_exists = $this->elasticsearch->indices()->exists($params);
         if ($index_exists){
             $response = $this->elasticsearch->indices()->delete($params);
+            Log::info("Index deleted!");
             return redirect('/')->with('message', 'Index deleted!');
         } else {
             return redirect('/')->with('message', 'No index to delete!');
@@ -42,8 +44,10 @@ class IndexController extends Controller
         $index_exists = $this->elasticsearch->indices()->exists($params);
         if (!$index_exists){
             $response = $this->elasticsearch->indices()->create($params);
+            Log::info("New index created!");
             return redirect('/')->with('message', 'New index created!');
         } else {
+            Log::info("Unable to create index: index already exists!");
             return redirect('/')->with('message', 'Index already exists!');
         }
     }
@@ -63,30 +67,61 @@ class IndexController extends Controller
         $found = $response['hits']['total']['value'];
         return $found;
     }
-
-    public function index_item($file){
+    function convert_to_html($file){
+        $filename = basename($file);
+        $htmlfile = TEMPDIR . DIRECTORY_SEPARATOR . $filename . ".html";
+        // Use Pandoc to convert the .docx file to .html
+        $command_string = PANDOC . " --quiet -s -o \"" . $htmlfile . "\" \"" . $file . "\"";
+        // echo("Executing: " . $command_string . "\n");
+        exec($command_string);
+        // Convert extended characters to HTML entities
+        $handle = fopen($htmlfile, 'r');
+        $html = fread($handle, filesize($file));
+        $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
+        fclose($handle);
+        $handle = fopen($htmlfile, 'w');
+        fwrite($handle, $html);
+        fclose($handle);
+        if (file_exists($htmlfile)){
+            return $htmlfile;
+        } else {
+            return false;
+        }
+    }
+    public function index_file($file){
         $filename = basename($file);
         $found = $this->check_if_indexed($filename);
         if ($found){
-            $message = Carbon::now() . " Item " . $filename . " already indexed.";
-            Storage::append('index.log', $message);
-        } else {
-            $message = Carbon::now() . " Indexing new item: " . $filename;
-            Storage::append('index.log', $message);
-            $item = $this->get_metas($file);
-            $result = $this->post_entry($item, $this->elasticsearch);
-            $message = "    " . $result['result'] . " new item. ID: " . $result["_id"];
-            Storage::append('index.log', $message);
+            Log::info("Item " . $filename . " already indexed.");
+            return False;
         }
-        return;
+        $path_parts = pathinfo($filename);
+        if ($path_parts['extension'] == "docx"){
+            Log::info("Converting MS Word file to HTML: $filename");
+            $htmlfile = $this->convert_to_html($file);
+        } elseif ($path_parts['extension'] == "html") {
+            $htmlfile = $file;
+        } else {
+            Log::info("Unknown file type: $filename.");
+            return False;
+        }
+        $filehandle = fopen($htmlfile, "r") or die("Unable to read $htmlfile");
+        $html = fread($filehandle,filesize($htmlfile));
+        fclose($filehandle);
+        $domdoc = New DOMDocument;
+        $domdoc->loadHTML($html);
+        $entry = $this->get_metas($domdoc, $filename);
+        $result = $this->post_entry($entry);
+        Log::info($result['result'] . " new item. ID: " . $result["_id"] . " Filename: " . $filename);
+        return $result;
     }
+    
     function post_entry($entry){
         $params = [
             'index' => 'archive',
             // 'id' => 'my_id',
             'body' => $entry
         ];
-        // var_dump($params);
         $response = $this->elasticsearch->index($params);
         return $response;
     }
@@ -103,22 +138,19 @@ class IndexController extends Controller
         $total = $results['hits']['total']['value'];
         return $total;
     }
-    public function get_dates_from_filename($file){
-        $filename = basename($file);
-        $date['day'] = substr($filename, 0, 2);
-        $date['month'] = substr($filename, 2, 2);
-        $date['year'] = "20" . substr($filename, 4, 2);
-        return $date;
-    }
-    public function get_headlines($htmlfile){
-        $html = file_get_contents($htmlfile);
-        $domdoc = new DOMDocument;
-        $domdoc->loadHTML($html);
+    public function get_headlines($domdoc){
         $headlines = [];
-        $headings = $domdoc->getElementsByTagName('strong');
-        for ($i=0; $i < $headings->length; $i++) { 
-            $head = $headings->item($i)->nodeValue;
-            array_push($headlines, $head);
+        $classed_headings = $domdoc->getElementById('storytitle');
+        if ($classed_headings){
+            foreach ($classed_headings as $heading) {
+                $headlines[] = $heading->nodeValue;
+            }
+        } else {
+            $headings = $domdoc->getElementsByTagName('strong');
+            for ($i=0; $i < $headings->length; $i++) { 
+                $head = $headings->item($i)->nodeValue;
+                array_push($headlines, $head);
+            }
         }
         $h1s = $domdoc->getElementsByTagName('h1');
         for ($i=0; $i < $h1s->length; $i++) { 
@@ -128,76 +160,85 @@ class IndexController extends Controller
         }
         return $headlines;
     }
-    public function get_credits($htmlfile){
-        $html = file_get_contents($htmlfile);
-        $domdoc = new DOMDocument;
-        $domdoc->loadHTML($html);
-        $headings = $domdoc->getElementsByTagName('strong');
+    public function get_credits($domdoc){
         $credits = [];
-        foreach ($headings as $heading) {
-            $pattern = "/[A-Z][a-z]+\w/";
-            $heading_string = $heading->nodeValue;
-            // We know it's not a name if it's longer than 20 characters.
-            if (strlen($heading_string) > 20){
-                continue;
+        $classed_credits = $domdoc->getElementById('credit');
+        if ($classed_credits){
+            foreach ($classed_credits as $credit){
+                $credits[] = $credit->nodeValue;
             }
-            // We know it's not a name if it has ' - '.
-            if (preg_match('/ - /', $heading_string)){
-                continue;
-            }
-            // We know it's not a name if it has a & in it.
-            if (preg_match('/ & /', $heading_string)){
-                continue;
-            }
-            if (preg_match_all($pattern, $heading_string, $matches) >= 2){
-                array_push($credits, $heading_string);
+        } else {
+            $strong_credits = $domdoc->getElementsByTagName('strong');
+            foreach ($strong_credits as $credit) {
+                $pattern = "/[A-Z][a-z]+\w/";
+                $credit_string = $credit->nodeValue;
+                // We know it's not a name if it's longer than 25 characters.
+                if (strlen($credit_string) > 25){
+                    continue;
+                }
+                // We know it's not a name if it has ' - '.
+                if (preg_match('/ - /', $credit_string)){
+                    continue;
+                }
+                // We know it's not a name if it has a & in it.
+                if (preg_match('/ & /', $credit_string)){
+                    continue;
+                }
+                if (preg_match_all($pattern, $credit_string, $matches) >= 2){
+                    $credits[] = $credit_string;
+                }
             }
         }
         return $credits;
     }
-    function get_pagenumbers($htmlfile){
-        $html = file_get_contents($htmlfile);
+    function get_pagenumbers($domdoc){
         $page_nos = [];
-        $html_object = new DOMDocument;
-        $html_object->loadHTML($html);
-        $body = $html_object->getElementsByTagName('body')->item(0);
-        $lines = explode("\n", $body->nodeValue);
-        foreach ($lines as $line){
-            if (strpos($line, "ladsy")){
-                $line = str_replace("Bladsy", '', $line);
-                $line = str_replace(": ", '', $line);
-                $page_nums = explode(";", $line);
-                foreach ($page_nums as $num){
-                    $num = trim(str_replace("\r", '', $num));
-                    array_push($page_nos, $num);
+        $pagerefs = $domdoc->getElementById('pageref');
+        if ($pagerefs){
+            foreach ($pagerefs as $pageref){
+                $page_nos[] = $pageref->nodeValue;
+            }
+        } else {
+            $body = $domdoc->getElementsByTagName('body')->item(0);
+            $lines = explode("\n", $body->nodeValue);
+            foreach ($lines as $line){
+                if (strpos($line, "ladsy")){
+                    $line = str_replace("Bladsy", '', $line);
+                    $line = str_replace(": ", '', $line);
+                    $page_nums = explode(";", $line);
+                    foreach ($page_nums as $num){
+                        $num = trim(str_replace("\r", '', $num));
+                        array_push($page_nos, $num);
+                    }
                 }
             }
         }
         return $page_nos;
     }
-    function get_articlehtml($htmlfile){
-        $html = file_get_contents($htmlfile);
-        $html_object = new DOMDocument;
-        $html_object->loadHTML($html);
-        $body_content = $html_object->getElementsByTagName('body')->item(0);
-        $content = $html_object->saveHTML($body_content);
-        return $content;
+    function get_articlebody($domdoc){
+        $body_content = $domdoc->getElementsByTagName('body')->item(0);
+        $body = $domdoc->saveHTML($body_content);
+        return $body;
     }
-    public function get_metas($htmlfile){
+    function get_filename($domdoc){
+        $filename = $domdoc->getElementById('filename');
+        return $filename->nodeValue;
+    }
+    public function get_metas($domdoc, $filename){
         $metas = [];
-        $filename = basename($htmlfile);
-        $filedate = $this->get_dates_from_filename($htmlfile);
+        $metas['headlines'] = $this->get_headlines($domdoc);
+        $metas['credits'] = $this->get_credits($domdoc);
+        $metas['content'] = $this->get_articlebody($domdoc);
+        $metas['pagenos'] = $this->get_pagenumbers($domdoc);
+        $metas['filename'] = $filename;
+        $filedate = [];
+        $filedate['day'] = substr($metas['filename'], 0, 2);
+        $filedate['month'] = substr($metas['filename'], 2, 2);
+        $filedate['year'] = "20" . substr($metas['filename'], 4, 2);
+        $metas['file'] = 'Archives' . DIRECTORY_SEPARATOR . env('ARCHIVE_PUBNAME') . DIRECTORY_SEPARATOR . $filedate['year'] . DIRECTORY_SEPARATOR . $filedate['month'] . DIRECTORY_SEPARATOR . $filedate['day'] . DIRECTORY_SEPARATOR . $metas['filename'];
         $datestring = intval($filedate['year']) . "-" . intval($filedate['month']) . "-" . intval($filedate['day']);
         $date = new DateTime($datestring);
-        $date = $date->format('Y-m-d');
-        $metas['date'] = $date;
-        $html_content = file_get_contents($htmlfile);
-        $metas['headlines'] = $this->get_headlines($htmlfile);
-        $metas['credits'] = $this->get_credits($htmlfile);
-        $metas['content'] = $this->get_articlehtml($htmlfile);
-        $metas['pagenos'] = $this->get_pagenumbers($htmlfile);
-        $metas['file'] = app('App\Http\Controllers\ArticleController')->build_newdir($htmlfile) . basename($htmlfile);
-        $metas['filename'] = basename($htmlfile);
+        $metas['date'] = $date->format('Y-m-d');
         return $metas;
     }
     public function ingest_files(){
@@ -212,18 +253,25 @@ class IndexController extends Controller
             }
         }
         if ($files_total > 0){
-            $message = Carbon::now() . " Processing " . $files_total . " files in input directory.";
-            Storage::append('index.log', $message);
+            $message = "Processing " . $files_total . " files in input directory.";
+            Log::info($message);
         }
         foreach ($files as $filename){
             if (preg_match('/^\./', $filename)){
                 continue;
             }
             $file = $inputdir . DIRECTORY_SEPARATOR . $filename;
-            $result = $this->index_item($file);
+            $result = $this->index_file($file);
+            $message = "Indexed file: " . $filename;
+            Log::info($message);
             $storeresult = app('App\Http\Controllers\ArticleController')->store_article_file($file);
         }
-        $message = $files_total . " new files indexed.";
+        if ($files_total > 0){
+            $message = $files_total . " new files indexed.";
+        } else {
+            $message = "No new files found to be indexed.";
+        }
+        Log::info($message);
         return redirect('/admin')->with('message', $message);
     }
 
@@ -241,20 +289,20 @@ class IndexController extends Controller
             return $files;
         }
 
-        $message = Carbon::now() . " Started index rebuild.\n";
-        Storage::append('index.log', $message);
+        $message = "Started index rebuild.\n";
+        Log::info($message);
 
         if (!is_dir($this->archive)){
-            $message = Carbon::now() . " Unable to read archive directory " . $this->archive . "\n";
-            Storage::append('index.log', $message);
+            $message = "Unable to read archive directory " . $this->archive . "\n";
+            Log::info($message);
         }
-        $message = Carbon::now() . " Getting files to index...";
-        Storage::append('index.log', $message);
+        $message = "Getting files to index...";
+        Log::info($message);
         $files = get_files($this->archive);
 
         foreach ($files as $file) {
-            $message = Carbon::now() . " Indexing file " . $file . "\n";
-            Storage::append('index.log', $message);
+            $message = "Indexing file " . $file . "\n";
+            Log::info($message);
         }
 
         return view('admin');

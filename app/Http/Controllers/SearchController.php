@@ -17,6 +17,7 @@ class SearchController extends Controller
         # Build URL for Elastic server from config
         $server_address = Config::get('elastic.server.ip');
         $server_port = Config::get('elastic.server.port');
+        $this->index = Config::get('elastic.index');
         $hosts = [
             $server_address . ":" . $server_port
         ];
@@ -74,7 +75,6 @@ class SearchController extends Controller
             $filter['range']['date']["lte"] = $enddate;
         }
         
-        $index = Config::get('elastic.index');
         if (Session::get('itemsperpage')){
             $size = Session::get('itemsperpage');
         } else {
@@ -93,7 +93,7 @@ class SearchController extends Controller
         }
 
         $params = [
-            'index' => $index,
+            'index' => $this->index,
             'body' => [
                 'query' => [
                     'bool' => [
@@ -133,9 +133,8 @@ class SearchController extends Controller
         return view('article_viewer')->with('result', $meta);
     }
     public function retrieve_article_meta_by_id($id){
-        $index = Config::get('elastic.index');
         $params = [
-            'index' => $index,
+            'index' => $this->index,
             'body' => [
                 'query' => [
                     'match' => [
@@ -146,5 +145,27 @@ class SearchController extends Controller
         ];
         $result = $this->elasticsearch->search($params);
         return $result;
+    }
+    public function get_index_info(){
+        $params = [
+            'index' => $this->index,
+            'body' => [
+                'size' => 1,
+                'sort' => [
+                    'date' => 'desc'
+                ],
+                'query' => [
+                    'match_all' => new \stdClass()
+                ]
+            ]
+        ];
+        $result = $this->elasticsearch->search($params);
+        $total_items = $result['hits']['total']['value'];
+        $latest_item_date = $result['hits']['hits'][0]['_source']['date'];
+        $index_info = [
+            'total' => $total_items,
+            'newest_date' => $latest_item_date
+        ];
+        return $index_info;
     }
 }

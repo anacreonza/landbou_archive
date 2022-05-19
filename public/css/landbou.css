@@ -75,6 +75,23 @@ img {
 .search-button:hover {
     background-color: var(--highlight-hover);
 }
+.right-button-container {
+    display: flex;
+    direction: rtl;
+    padding-bottom: 1rem;
+}
+.create-button {
+    background-color: var(--highlight-colour);
+    color: white;
+    margin-left: auto;
+}
+.new-article-metabox{
+    display: grid;
+    grid-template-columns: 70px auto 120px 200px;
+    padding-bottom: 10pt;
+    gap: 20px;
+    align-items: center;
+}
 .searchform {
     display: flex;
     flex-direction: column;
@@ -136,6 +153,9 @@ img {
 .article-preview {
     margin-bottom: 1rem;
 }
+.article-content p:first-of-type strong {
+    font-size: x-large;
+}
 .article-container {
     display: grid;
     grid-template-columns: 3fr 1fr;
@@ -178,6 +198,9 @@ img {
 .highlighted-text {
     background-color: yellow;
 }
+.home-link {
+    color: white;
+}
 .daterange-block {
     display: flex;
     margin-top: 15pt;
@@ -190,4 +213,14 @@ img {
 .backlink {
     margin-top: 2rem;
     margin-bottom: 2rem;
+}
+.index-info-block {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    color: white;
+    opacity: 60%;
+}
+.ck-editor__editable_inline {
+    min-height: 60vh;
 }

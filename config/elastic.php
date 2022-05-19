@@ -1,11 +1,11 @@
 <?php
 return [
     'server' => [
-        'ip' => 'elastic',
+        'ip' => 'lbarchive-elastic',
         'port' => '9200',
     ],
     'kibana' => [
-        'ip' => 'kibana',
+        'ip' => 'lbarchive-kibana',
         'port' => '5601'
     ],
     'index' => 'archive'

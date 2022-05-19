@@ -15,7 +15,7 @@ services:
     ports:
       - "8081:80"
   php:
-    image: php:7.2-fpm-alpine
+    image: php:7.4-fpm-alpine
     container_name: lbarchive-php
     networks:
       - lbarchive_network
@@ -31,16 +31,16 @@ services:
       - cluster.name=es-docker-cluster
       - discovery.seed_hosts=es01
       - cluster.initial_master_nodes=es01
-    networks: 
+    networks:
       - lbarchive_network
-    volumes: 
+    volumes:
       - ./index:/usr/share/elasticsearch/data
-    ports: 
+    ports:
       - "9200:9200"
   kibana:
     image: docker.elastic.co/kibana/kibana:7.11.1
     container_name: lbarchive-kibana
-    depends_on: 
+    depends_on:
       - elastic
     ports:
       - 5601:5601
