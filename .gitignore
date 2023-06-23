@@ -4,6 +4,8 @@
 /public/archives
 /public/temp
 /public/oldsite.zip
+/public/import_errors
+/public/lbarchive_hotfolder
 /storage/*.key
 /vendor
 /public/archives

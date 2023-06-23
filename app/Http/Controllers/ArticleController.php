@@ -51,7 +51,7 @@ class ArticleController extends Controller
     }
     public function store_article_file($sourcefile){
         if (!file_exists($sourcefile)){
-            echo "No such file found as " . $sourcefile . "\n";
+            log::info("No such file found as " . $sourcefile);
             return false;
         }
         $newdir = $this->build_newdir($sourcefile);
