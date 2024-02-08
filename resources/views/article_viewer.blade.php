@@ -2,6 +2,10 @@
 
 @section('content')
     <x-searchbar/>
+    @php
+        $id = $result['hits']['hits'][0]['_id'];
+        $filename = $result['hits']['hits'][0]['_source']['filename'];
+    @endphp
     <div class="container">
         <div class="backlink">
             <a href="javascript:history.back()"><< Back to results</a>
@@ -26,13 +30,29 @@
                         @if ($result['hits']['hits'][0]['_source']['filename'])
                             <div class="info-item"><b>File Name: </b>{{$result['hits']['hits'][0]['_source']['filename']}}</div>
                         @endif
-                        <div class="info-item"><a href="/article/download/{{$result['hits']['hits'][0]['_id']}}">Download</a></div>
-                        <div class="info-item"><a href="/article/edit/{{$result['hits']['hits'][0]['_id']}}">Edit</a></div>
-                        <form method="POST" action="/article/delete/{{$result['hits']['hits'][0]['_id']}}">
-                            @csrf
-                            <input name="_method" type="hidden" value="DELETE">
-                            <button type="submit" class="btn btn-xs btn-danger btn-flat show_confirm" onclick="return confirm('Are you sure you wish to delete this article?')" title='Delete'>Delete</button>
-                        </form>
+                        @php
+                        $filename = basename($result['hits']['hits'][0]['_source']['filename']);
+                        $date['day'] = substr($filename, 0, 2);
+                        $date['month'] = substr($filename, 2, 2);
+                        $date['year'] = "20" . substr($filename, 4, 2);
+                        $docfilename = str_replace(".html", '', $filename);
+                        $docpath = env('DOCX_BACKUP_FOLDER') . $date['year'] . "/" . $date['month'] . "/" . $date['day'] . "/" . $docfilename
+                        @endphp
+                        <!-- <div class="info-item"><a href="/article/download/{{$result['hits']['hits'][0]['_id']}}">Download</a></div> -->
+                        @if (file_exists($docpath))
+                            <div class="info-item"><a href="/backup/{{$date['year']}}/{{$date['month']}}/{{$date['day']}}/{{$docfilename}}">Download Word Doc</a></div>
+                        @endif
+                        @if (Auth::check())
+                            @if (Auth::user()->role == "admin")
+                                <div class="info-item">
+                                    <form action="/article/delete/{{$id}}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you wish to delete this article?')" >Delete Article</button>
+                                    </form>
+                                </div>
+                            @endif
+                        @endif
+                        <div class="info-item"><a href="/archives/LandbouWeekblad/{{$date['year']}}/{{$date['month']}}/{{$date['day']}}/{{$filename}}" target="_blank">Download HTML</a></div>
                     </div>
                 </div>
             </div>

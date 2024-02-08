@@ -13,10 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    $index_info = app('App\Http\Controllers\SearchController')->get_index_info();
-    return view('search')->with('index_info', $index_info);
-});
+Route::get("/", "SearchController@start");
 Route::get('/search', 'SearchController@search')->name('search');
 Route::get('/search_options', function(){
     $search_options = Session::get('search_options');
@@ -26,6 +23,9 @@ Route::get('/results', function(){
     return view('results');
 });
 Route::get('/admin', function(){
+    if (Auth::user()->role != "admin"){
+        return redirect("/");
+    }
     $indexinfo = app('App\Http\Controllers\IndexController')->get_total_indexed_items();
     return view('admin')->with('indexinfo', $indexinfo);
 });
@@ -40,9 +40,15 @@ Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@index');
 
 Route::get('/article/read/{id}', 'SearchController@search_id')->name('search_id');
-Route::get('/article/download/{id}', 'ArticleController@download');
+Route::get('/article/download/{id}', 'FileController@download');
+Route::get('/file/convert/{id}', 'FileController@convert');
 Route::post('/article/create', 'ArticleController@create');
 Route::get('/article/edit/{id}', 'ArticleController@edit');
 Route::post('/article/update/{id}', 'ArticleController@update');
-Route::delete('/article/delete/{id}', 'ArticleController@delete');
+Route::post('/article/delete/{id}', 'ArticleController@delete');
 Route::get('/article/compose/', 'ArticleController@compose');
+Auth::routes();
+
+Route::get('/logout', function(){
+    return redirect("/login");
+});

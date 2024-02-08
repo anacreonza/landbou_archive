@@ -19,7 +19,7 @@
     @endif
     <div class="search-background" style="background-image: url({{$random_image}})">
         <div class="searchbox">
-        <form action="/search" class="searchform" method="GET">
+            <form action="/search" class="searchform" method="GET">
                 <div class="logobox">
                     <div class="logo">
                         <img src="logos/landboulogo.png" alt="logo">
@@ -31,22 +31,58 @@
                     <div class="buttons">
                         <button type="submit" class="button search-button">Search</button>
                     </div>
-                    <div>
-                        <div>
-                            <a class="home-link" href="/search_options">More search options</a>
-                        </div>
+                </div>
+            </form>
+            <div class="search-links">
+                <div>
+                    <a class="home-link" href="/search_options">More search options</a>
+                </div>
+                @if (Auth::check())
+                    @if (Auth::user()->role == "admin" || Auth::user()->role == "creator")
                         <div>
                             <a class="home-link" href="/article/compose/">Compose new article</a>
                         </div>
+                    @endif
+                    @if (Auth::user()->role == "admin")
                         <div>
                             <a class="home-link" href="/admin">Admin page</a>
                         </div>
-                    </div>
-                </div>
-            </form>
+                    @endif
+                @endif
+            </div>
         </div>
         <div class="index-info-block">
-            <p>{{$index_info['total']}} items indexed. Latest document: {{$index_info['newest_date']}}</p>
+            <div class="index_info-block-left">
+                {{$index_info['total']}} items indexed. Latest document: {{$index_info['newest_date']}}
+            </div>
+            <div class="index_info-block-right">
+                <ul class="navbar-nav ml-auto">
+                    <!-- Authentication Links -->
+                    @guest
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                        </li>
+                    @else
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                {{ Auth::user()->name }}
+                            </a>
+        
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{ route('logout') }}"
+                                    onclick="event.preventDefault();
+                                                    document.getElementById('logout-form').submit();">
+                                    {{ __('Logout') }}
+                                </a>
+        
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                            </div>
+                        </li>
+                    @endguest
+                {{-- <a href="/home">{{ Auth::user()->name }} </a> --}}
+            </div>
         </div>
     </div>
 @endsection

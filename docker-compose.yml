@@ -49,3 +49,9 @@ services:
       ELASTICSEARCH_HOSTS: '["http://elastic:9200"]'
     networks:
       - lbarchive_network
+  pandoc:
+    image: pandoc/core:latest
+    container_name: lbarchive-pandoc
+    networks:
+      - lbarchive_network
+

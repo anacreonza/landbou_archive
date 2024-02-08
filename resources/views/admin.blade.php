@@ -11,7 +11,7 @@
             <li><a href="/admin/rebuild_index">Rebuild Index</a></li>
             <li><a href="/admin/delete_index">Delete Index</a></li>
             <li><a href="/admin/ingest_files">Ingest New Files</a></li>
-            <li><a href="/logs">View logs</a></li>
+            <li><a href="/logs" target="_blank">View logs</a></li>
             <li><a href="http://localhost:5601/app/dev_tools#/console">Kibana Console</a></li>
         </ul>
         <div>

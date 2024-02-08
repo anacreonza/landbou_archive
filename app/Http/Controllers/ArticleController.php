@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 use Config;
 use Carbon\Carbon;
 use Datetime;
+use Session;
+use Auth;
 
 class ArticleController extends Controller
 {
@@ -22,15 +24,14 @@ class ArticleController extends Controller
         ];
         $this->elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
     }
-    public function download(Request $request, $id){
+    public function get_filename_from_id($id){
         $params = [
-            'index' => $this->index,
-            'id' => $id
+          'index' => $this->index,
+          'id' => $id
         ];
         $response = $this->elasticsearch->get($params);
         $file = $response['_source']['file'];
-        return redirect('/' . $file);
-        
+        return $file;
     }
     public function build_article_url($id){
         $article_meta = app('App\Http\Controllers\SearchController')->retrieve_article_meta_by_id($id);
@@ -251,24 +252,47 @@ class ArticleController extends Controller
 
     }
     public function delete($id){
-        $params = [
-            'index' => $this->index,
-            'id' => $id
-        ];
-        try {
-            $response = $this->elasticsearch->get($params);
-        } catch (\Throwable $th) {
-            //throw $th;
-            return redirect('/')->with('message', "Unable to locate document with id: " . $id);
+        if (Auth::check()){
+            if (Auth::user()->role == "admin"){
+                $params = [
+                    'index' => $this->index,
+                    'id' => $id
+                ];
+                try {
+                    $response = $this->elasticsearch->get($params);
+                } catch (\Throwable $th) {
+                    //throw $th;
+                    return redirect('/')->with('message', "Unable to locate document with id: " . $id);
+                }
+                
+                $response = $this->elasticsearch->delete($params);
+                if ($response['result'] == 'deleted'){
+                    $message = "Item: " . $id . " deleted by " . Auth::user()->name;
+                } else {
+                    $message = "Item failed to delete: " . $id;
+                }
+                Log::info($message);
+                \sleep(1); // Delete takes time so delay returning so the deleted item does not still appear.
+                $searchstring = Session::get('searchstring');
+                $sort_order = Session::get('sort_order');
+                $start_date = Session::get('start_date');
+                $end_date = Session::get('end_date');
+                $newurl = "/search?searchstring=$searchstring";
+                if (isset($sort_order)){
+                  $newurl .= "&sort_order=$sort_order";
+                }
+                if (isset($start_date)){
+                  $newurl .= "&startdate=$start_date";
+                }
+                if (isset($end_date)){
+                  $newurl .= "&enddate=$end_date";
+                }
+                return redirect($newurl)->with('message', $message);
+            } else {
+                return redirect('/')->with('message', "No permission to delete document with id: " . $id);
+            }
+        } else {
+            return redirect('/')->with('message', "No permission to delete document with id: " . $id);
         }
-        
-        $response = $this->elasticsearch->delete($params);
-        if ($response['result'] == 'deleted'){
-            $message = "Item deleted: " . $id;
-          } else {
-            $message = "Item failed to delete: " . $id;
-          }
-        Log::info($message);
-        return redirect('/')->with('message', $message);
     }
 }

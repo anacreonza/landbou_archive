@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Elasticsearch\ClientBuilder;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Auth;
 use Config;
 use DateTime;
 use DOMDocument;
@@ -27,6 +28,8 @@ class IndexController extends Controller
     protected $archive = "archives";
     
     public function __construct() {
+        // Check that user is authenticated
+        $this->middleware('auth');
         # Build URL for Elastic server from config
         $server_address = Config::get('elastic.server.ip');
         $server_port = Config::get('elastic.server.port');
@@ -37,6 +40,9 @@ class IndexController extends Controller
         $this->elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
     }
     public function delete(){
+        if (Auth::user()->role != "admin"){
+            return redirect("/");
+        }
         $params = ['index' => $this->index];
         $index_exists = $this->elasticsearch->indices()->exists($params);
         if ($index_exists){
@@ -79,9 +85,20 @@ class IndexController extends Controller
         $filename = basename($file);
         $htmlfile = TEMP_DIR . DIRECTORY_SEPARATOR . $filename . ".html";
         // Use Pandoc to convert the .docx file to .html
-        $command_string = PANDOC . " --quiet -s -o \"" . $htmlfile . "\" \"" . $file . "\"";
+        $containerName = "lbarchive-pandoc";
+        $pandocCommand = "pandoc --quiet -s -o \"" . $htmlfile . "\" \"" . $file . "\"";
+        $dockerCommand = "docker exec $containerName $pandocCommand";
+        // $command_string = PANDOC . " --quiet -s -o \"" . $htmlfile . "\" \"" . $file . "\"";
         // echo("Executing: " . $command_string . "\n");
-        exec($command_string);
+        exec($dockerCommand, $output, $returnValue);
+        die(var_dump($output));
+        if ($returnValue === 0){
+            foreach ($output as $line)
+            echo $line .  PHP_EOL;
+        }
+        if (!file_exists($htmlfile)){
+            die("Failed to create html output file.");
+        }
         $handle = fopen($htmlfile, 'r');
         $html = fread($handle, filesize($file));
         fclose($handle);
@@ -257,6 +274,16 @@ class IndexController extends Controller
 
         $xmlDoc = new DOMDocument();
         $xmlDoc->load($file);
+        // Process the XML to pull out certain tags and attributes.
+        $ImageTags = $xmlDoc->getElementsByTagName('Image');
+        $captions = [];
+        foreach($ImageTags as $tag){
+            if ($tag->hasAttribute("Caption")){
+                $captions[] = $tag->getAttribute("Caption");
+            }
+        }
+        dd($captions);
+
         $raw_html = $xmlDoc->SaveHTML();
         // $raw_html = str_replace("<head></head>", $htmlheader, $raw_html);
         $tags = [

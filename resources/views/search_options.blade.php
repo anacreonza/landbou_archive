@@ -25,6 +25,11 @@ $start_date = Session::get('startdate');
                 </div>
                 <label for="searchstring">Text to search for:</label>
                 <input type="text" class="form-control big-search-input" id="searchstring" name="searchstring" value="{{Session::get('searchstring')}}">
+                <label for="searchtype">Search Type</label>
+                <select type="text" class="form-control" id="searchtype" name="searchtype">
+                    <option value="match">Match All Terms</option>
+                    <option value="match_phrase">Match Exact Phrase</option>
+                </select>
                 <label for="order">Order:</label>
                 <select name="sort_order" id="sort_order" class="form-control">
                     <option value="newest"
@@ -43,11 +48,11 @@ $start_date = Session::get('startdate');
                 <div class="daterange-block">
                     <div class="date-item">
                         <label for="startdate">From:</label>
-                        <input type="date" name="startdate" id="startdate" class="form-control date-from">
+                        <input type="date" name="startdate" id="startdate" class="form-control date-from" value={{Session::get('start_date')}}>
                     </div>
                     <div class="date-item">
                         <label for="enddate">To:</label>
-                        <input type="date" name="enddate" id="enddate" class="form-control date-to">
+                        <input type="date" name="enddate" id="enddate" class="form-control date-to" value={{Session::get('end_date')}}>
                     </div>
                 </div>
                 <div class="button-group">

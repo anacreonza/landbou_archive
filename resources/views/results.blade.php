@@ -18,6 +18,11 @@ function remove_tags_from_highlight($highlight){
 @extends('layouts.app')
 @section('content')
     <x-searchbar/>
+    @if (session('message'))
+    <div class="alert alert-warning">
+        {{ session('message') }}
+    </div>
+    @endif
     <div class="container">
         <x-resultdetails/>
         <x-pagination/>

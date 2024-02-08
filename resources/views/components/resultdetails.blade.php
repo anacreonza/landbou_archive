@@ -2,8 +2,11 @@
 
 $total_hits = Session::get('totalhits');
 $query = Session::get('query');
-
 $sort_order = Session::get('sort_order');
+$search_type = Session::get('searchtype');
+if (isset($search_type)){
+    $search_type_string = "Search Type: " . $search_type;
+}
 
 switch ($sort_order) {
     case 'oldest':
@@ -47,5 +50,5 @@ if (isset($query['body']['query']['bool']['filter'])){
 }
 ?>
 <div>
-    <p>{{$total_hits}} items found. Showing results {{$first_item}} - {{$last_item}} for "{{$search_string}}"{{$date_range_string}}{{$sort_order_string}}</p>
+    <p>{{$total_hits}} items found. Showing results {{$first_item}} - {{$last_item}} for "{{$search_string}}"{{$date_range_string}}{{$sort_order_string}} {{$search_type_string}}</p>
 </div>

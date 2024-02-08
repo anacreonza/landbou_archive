@@ -28,11 +28,12 @@ img {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 12pt;
-    padding: 3rem;
-    margin-bottom: 1rem;
+    border-radius: 10pt;
+    padding: 3rem 3rem 2rem 3rem;
+    margin-top: 2rem;
     /* height: 18rem; */
-    width: 55rem;
+    min-width: 80%;
+    max-width: 500px;
     background: rgba(175, 175, 175, 0.7);
 }
 .logobox {
@@ -109,15 +110,17 @@ img {
 
 .toolbar-searchform {
     vertical-align: middle;
+    padding-right: 12pt;
 }
 .toolbar-search-input {
-    width: 25rem;
+    width: 20rem;
     height: 2.2rem;
     border-top-left-radius: 0.5rem;
     border-bottom-left-radius: 0.5rem;
     border: none;
     vertical-align: middle;
     padding: 6pt;
+    
 }
 .mini-search-button {
     border-top-right-radius: 0.5rem;
@@ -159,7 +162,13 @@ img {
 .article-container {
     display: grid;
     grid-template-columns: 3fr 1fr;
-    grid-gap: 50px 50px;
+    grid-gap: 60px;
+    padding-bottom: 5rem;
+}
+.action-links-bar {
+    display: flex;
+    background-color: darkseagreen;
+    margin-bottom: 1rem;
 }
 .article-metabox-container {
     display: grid;
@@ -195,6 +204,9 @@ img {
 .preview-highlightbox {
     margin-bottom: 1rem;
 }
+.preview-highlightbox > h1,h2,h3,h4 {
+    font-size: 11pt;
+}
 .highlighted-text {
     background-color: yellow;
 }
@@ -215,11 +227,24 @@ img {
     margin-bottom: 2rem;
 }
 .index-info-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
     position: absolute;
-    right: 20px;
-    top: 10px;
+    right: 0px;
+    top: 0px;
     color: white;
     opacity: 60%;
+    background-color: black;
+    padding: 12px 25px;
+    width: 100%;
+}
+.search-links {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 .ck-editor__editable_inline {
     min-height: 60vh;
